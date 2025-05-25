@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "uk.shiz.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ExampleMixin",
+    "MixinPlayerManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}
