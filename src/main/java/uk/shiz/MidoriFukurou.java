@@ -35,7 +35,7 @@ public class MidoriFukurou implements ModInitializer {
 				// Register commands here
 				// Example: CommandRegistry.register(dispatcher);
 				LOGGER.info("Registering commands for {}", MOD_ID);
-				CommandRegistry.register(dispatcher);
+				CommandRegistry.register(dispatcher, registryAccess);
 			}
 		);
 
