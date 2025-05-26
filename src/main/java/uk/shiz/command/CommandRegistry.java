@@ -6,6 +6,7 @@ import net.minecraft.server.command.ServerCommandSource;
 
 public class CommandRegistry {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
-        ChallengeCommand.register(dispatcher, commandRegistryAccess);
+        var commandReg = new CommandRegister(commandRegistryAccess, dispatcher);
+        ChallengeCommand.register(commandReg);
     }
 }

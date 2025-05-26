@@ -1,42 +1,44 @@
 package uk.shiz.command;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.ArgumentType;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.MessageArgumentType;
-import net.minecraft.command.argument.TextArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import uk.shiz.MidoriFukurou;
+import uk.shiz.challenge.Challenge;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ChallengeCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
-                                CommandRegistryAccess commandRegistryAccess)  {
-        dispatcher.register(
-            CommandManager.literal("challenge")
-                .then(CommandManager.argument("response", TextArgumentType.text(commandRegistryAccess))
-                    .executes(context -> {
-                        System.out.println("Challenge command executed");
-                        Text text = TextArgumentType.getTextArgument(context, "response");
-                        System.out.println("Response: " + text.getString());
-//                        try {
-//                            ServerCommandSource source = context.getSource();
-//                            ServerPlayerEntity player = source.getPlayer();
-//                            var response = MessageArgumentType.getMessage(context, "response").getString();
-//                            System.out.println(String.format("Player %s challenged with response: %s", player.getName().getString(), response));
-//                            var splitResponse = response.split(" ", 2);
-//                            if (splitResponse.length < 2) {
-//                                return 0;
-//                            }
-//                            var question = splitResponse[0];
-//                            var answer = splitResponse[1];
-//                            System.out.println(String.format("Player %s challenged with question: %s, answer: %s", player.getName().getString(), question, answer));
-//                        } catch (Exception e) {
-//                            System.err.println("Error executing challenge command: " + e.getMessage());
-//                        }
-                        return 1;
-                    }))
-        );
+    private static ArrayList<Challenge> challenges = new ArrayList<>();
+
+    public static Challenge createResponseListener(
+            ServerPlayerEntity p,
+            BiFunction<Challenge, String, Integer> callbackFunction
+    ) {
+        var challenge = new Challenge(p.getUuid(), callbackFunction);
+        challenges.add(challenge);
+        return challenge;
+    }
+
+    public static void register(CommandRegister commandReg) {
+        commandReg.newCommand("challenge", (context, text) -> {
+            var args = Arrays.stream(text.getString().split(" ")).filter(s -> !s.isEmpty()).toArray(String[]::new);
+            if (args.length < 2) {
+                MidoriFukurou.LOGGER.error("No challenge ID provided.");
+                return 0;
+            }
+            var puuid = context.getSource().getPlayer().getUuid();
+            var challengeId = args[0];
+
+            for (Challenge challenge : challenges) {
+                if (challenge.puuid.equals(puuid) && challenge.challengeId.equals(challengeId)) {
+                    challenge.callbackFunction.apply(challenge, args[1]);
+                    return 1;
+                }
+            }
+            MidoriFukurou.LOGGER.error("No challenge found for player " + context.getSource().getPlayer().getName().getString() + " with ID " + challengeId);
+            return 1;
+        }).registerThis();
     }
 }
