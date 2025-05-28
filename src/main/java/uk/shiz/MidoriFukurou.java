@@ -3,6 +3,8 @@ package uk.shiz;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
+
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
@@ -15,42 +17,39 @@ import uk.shiz.command.CommandRegistry;
 import java.rmi.registry.Registry;
 
 public class MidoriFukurou implements ModInitializer {
-	public static MinecraftServer server;
-	public static final String MOD_ID = "midorifukurou";
+    public static MinecraftServer server;
+    public static final String MOD_ID = "midorifukurou";
 
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    // This logger is used to write text to the console and the log file.
+    // It is considered best practice to use your mod id as the logger's name.
+    // That way, it's clear which mod wrote info, warnings, and errors.
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-	@Override
-	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
+    @Override
+    public void onInitialize() {
+        // This code runs as soon as Minecraft is in a mod-load-ready state.
+        // However, some things (like resources) may still be uninitialized.
+        // Proceed with mild caution.
 //		Registries
 
-		CommandRegistrationCallback.EVENT.register(
-			(dispatcher, registryAccess, environment) -> {
-				// Register commands here
-				// Example: CommandRegistry.register(dispatcher);
-				LOGGER.info("Registering commands for {}", MOD_ID);
-				CommandRegistry.register(dispatcher, registryAccess);
-			}
-		);
+        CommandRegistrationCallback.EVENT.register(
+                (dispatcher, registryAccess, environment) -> {
+                    // Register commands here
+                    // Example: CommandRegistry.register(dispatcher);
+                    LOGGER.info("Registering commands for {}", MOD_ID);
+                    CommandRegistry.register(dispatcher, registryAccess);
+                }
+        );
+        ServerLifecycleEvents.SERVER_STARTING.register(
+                (MinecraftServer server) -> {
+                    MidoriFukurou.server = server;
+                }
+        );
 
-		LOGGER.info("Hello Fabric world!");
-		ServerLifecycleEvents.SERVER_STARTING.register(
-			(MinecraftServer server) -> {
-				MidoriFukurou.server = server;
-
-			}
-		);
-
-		ServerLifecycleEvents.SERVER_STARTED.register(
-				(MinecraftServer server) -> {
-					PlayerManager playerManager = server.getPlayerManager();
-				}
-		);
-	}
+        ServerLifecycleEvents.SERVER_STARTED.register(
+                (MinecraftServer server) -> {
+                    PlayerManager playerManager = server.getPlayerManager();
+                }
+        );
+    }
 }
