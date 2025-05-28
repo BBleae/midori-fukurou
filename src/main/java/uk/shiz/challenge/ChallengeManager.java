@@ -7,60 +7,42 @@ import uk.shiz.TextUtils;
 import uk.shiz.command.ChallengeCommand;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ChallengeManager {
     public static void sendChallengeToPlayer(
             Question q,
             ServerPlayerEntity player,
-            Boolean mustSolve
+            Function<Answer, Integer> callbackFunction
     ) {
 
-        BlockingQueue<Boolean> queue = new LinkedBlockingQueue<>();
+        BlockingQueue<Answer> queue = new LinkedBlockingQueue<>();
         Thread producer = asyncAnswerWaiterThread(player, queue, q);
         try {
             var result = queue.take();
             producer.join();
-            System.out.println("Player answer received: " + result);
-            if (result.equals(false)) {
-                System.out.println("Challenge cancelled by player or failed.");
-                if (mustSolve) {
-                    player.sendMessage(TextUtils.ParseQuickText(
-                            String.format("<red>挑战失败，请重新尝试！</red>")
-                    ));
-                    sendChallengeToPlayer(q,player, mustSolve);
-                } else {
-                    player.sendMessage(TextUtils.ParseQuickText(
-                            String.format("<yellow>挑战失败</yellow>")
-                    ));
-                }
-            } else {
-                player.sendMessage(TextUtils.ParseQuickText(
-                        String.format("<green>恭喜你，%s，挑战成功！</green>", player.getName().getString())
-                ));
-            }
-            player.sendMessage(
-                    TextUtils.ParseQuickText(q.analysis)
-            );
+            callbackFunction.apply(result);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    private static @NotNull Thread asyncAnswerWaiterThread(ServerPlayerEntity player, BlockingQueue<Boolean> queue, Question q) {
+    private static @NotNull Thread asyncAnswerWaiterThread(
+            ServerPlayerEntity player,
+            BlockingQueue<Answer> queue,
+            Question q
+    ) {
         Thread producer = new Thread(() -> {
             var challenge = ChallengeCommand.createResponseListener(player, (ch, playerAnswer) -> {
                 Boolean answerCorrect = ch.correctResponse.equals(playerAnswer);
-                System.out.println("Player answer: " + playerAnswer + ", correct answer: " + ch.correctResponse);
                 try {
                     if (answerCorrect) {
                         ch.solve();
                     }
-                    queue.put(answerCorrect);
+                    queue.put(Answer.from(playerAnswer, answerCorrect));
                 } catch (InterruptedException e) {
                     System.err.println("Failed to put player answer in queue: " + e.getMessage());
                 }

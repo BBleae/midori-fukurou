@@ -42,15 +42,19 @@ public class CommandRegister {
 
     public CommandBuilder newCommand(
             String prefix,
+            BiFunction<CommandContext<ServerCommandSource>, Text, Integer> cmdCallback
+    ) {
+        var cmdArgs = CommandManager.argument("args", TextArgumentType.text(this.commandRegistryAccess))
+                .executes(context -> CommandCallback(context, cmdCallback));
+        LiteralArgumentBuilder<ServerCommandSource> builder = CommandManager.literal(prefix).then(cmdArgs);
+        return new CommandBuilder(builder);
+    }
+
+    private int CommandCallback(
+            CommandContext<ServerCommandSource> context,
             BiFunction<CommandContext<ServerCommandSource>, Text, Integer> action
     ) {
-        LiteralArgumentBuilder<ServerCommandSource> builder = CommandManager.literal(prefix)
-                .then(CommandManager.argument("args", TextArgumentType.text(this.commandRegistryAccess))
-                        .executes(context -> {
-                            Text text = TextArgumentType.getTextArgument(context, "args");
-                            return action.apply(context, text);
-                        })
-                );
-        return new CommandBuilder(builder);
+        Text text = TextArgumentType.getTextArgument(context, "args");
+        return action.apply(context, text);
     }
 }
