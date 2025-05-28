@@ -4,6 +4,7 @@ import net.minecraft.dialog.DialogButton;
 import net.minecraft.dialog.DialogButtonData;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
+import uk.shiz.challenge.Dialog;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,6 +33,10 @@ public class DialogUtils {
 
     public static DialogButton createButton(Text text, String command, DialogType type) {
         return createButton(text, command, 128, type);
+    }
+
+    public static DialogButton createLongButton(Text text, String command, DialogType type) {
+        return createButton(text, command, 384, type);
     }
 
     public static DialogButton createButton(Text text, String command, int width) {

@@ -50,6 +50,10 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	implementation "net.kyori:adventure-api:4.21.0"
 	modImplementation include("eu.pb4:placeholder-api:2.6.3+1.21.5")
+
+	// unirest
+	modImplementation "com.konghq:unirest-java-core:4.4.7"
+	modImplementation "com.konghq:unirest-object-mappers-gson:4.2.9"
 }
 
 processResources {

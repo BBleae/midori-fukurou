@@ -45,11 +45,11 @@ public class Challenge {
 
     public void setChallenge(
             String challengeId,
-            Text challengeText,
+            String challengeText,
             String correctResponseValue,
             ArrayList<ChallengeOption> responses) {
         this.challengeId = challengeId;
-        this.challengeText = challengeText;
+        this.challengeText = TextUtils.ParseQuickText(challengeText);
         this.correctResponse = correctResponseValue;
         this.responses = responses;
     }
