@@ -36,7 +36,12 @@ public class ChallengeCommand {
     }
 
     private static Question parseQuestionFromJson(JsonNode body) {
-        var jsonObj = body.getArray().getJSONObject(0);
+        var arr = body.getArray();
+        if (arr.length() == 0) {
+            MidoriFukurou.LOGGER.error("No questions found in the response.");
+            return null;
+        }
+        var jsonObj = arr.getJSONObject(0);
         String title = jsonObj.getString("title");
         String rightAnswer = jsonObj.getString("rightAnswer");
         String analysis = jsonObj.optString("analysis", "");
@@ -74,9 +79,10 @@ public class ChallengeCommand {
         }).registerThis();
 
         commandReg.newCommand("exam", (context, text) -> {
+                    var level = text.getString().trim().toLowerCase();
                     var player = context.getSource().getPlayer();
                     new Thread(() -> {
-                        HttpResponse<JsonNode> response = Unirest.get("https://midori-api.satori.workers.dev/randomQuiz?maxCount=1")
+                        HttpResponse<JsonNode> response = Unirest.get("https://midori-api.satori.workers.dev/randomQuiz?maxCount=1&prefix=japanese/jlpt/" + level)
                                 .asJson();
                         if (response.getStatus() != 200) {
                             MidoriFukurou.LOGGER.error("Failed to fetch challenge: " + response.getStatusText());
@@ -84,6 +90,12 @@ public class ChallengeCommand {
                         }
                         JsonNode body = response.getBody();
                         Question q = parseQuestionFromJson(body);
+                        if (q == null) {
+                            player.sendMessage(TextUtils.ParseQuickText(
+                                    String.format("<red>无法获取题目，请稍后再试。</red>")
+                            ));
+                            return;
+                        }
                         sendChallengeToPlayer(q, player, (answer) -> {
                             if (answer.isCorrect == false) {
                                 player.sendMessage(TextUtils.ParseQuickText(
@@ -94,7 +106,7 @@ public class ChallengeCommand {
                             } else {
                                 player.sendMessage(TextUtils.ParseQuickText(
                                         String.format("===========================\n" +
-                                                        "<green>挑战成功！</green>"
+                                                "<green>挑战成功！</green>"
                                         )
                                 ));
                             }
