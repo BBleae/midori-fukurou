@@ -1,11 +1,20 @@
 package uk.shiz.command;
 
+import com.mojang.serialization.MapCodec;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
 import kong.unirest.core.Unirest;
+import net.minecraft.*;
+import net.minecraft.dialog.DialogButtonData;
+import net.minecraft.dialog.DialogCommonData;
+import net.minecraft.dialog.Dialogs;
+import net.minecraft.dialog.type.ColumnsDialog;
 import net.minecraft.dialog.type.Dialog;
+import net.minecraft.dialog.type.MultiActionDialog;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.Text;
 import uk.shiz.MidoriFukurou;
 import uk.shiz.TextUtils;
 import uk.shiz.challenge.Challenge;
@@ -13,10 +22,7 @@ import uk.shiz.challenge.ChallengeManager;
 import uk.shiz.challenge.Question;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -75,6 +81,53 @@ public class ChallengeCommand {
                 }
             }
             MidoriFukurou.LOGGER.error("No challenge found for player " + context.getSource().getPlayer().getName().getString() + " with ID " + challengeId);
+            return 1;
+        }).registerThis();
+
+        commandReg.newCommand("examtest", (context, text) -> {
+            var player = context.getSource().getPlayer();
+            try {
+                var dialogData = new DialogCommonData(
+                        TextUtils.ParseQuickText(
+                                "<green>" +
+                                        "<hover show_text 'ABCD'>1919</hover>" +
+                                        "</green>"
+                        ), Optional.of(Text.literal("DEF")), true, true, class_11520.CLOSE, List.of(), List.of()
+                );
+                var dialog = new MultiActionDialog(
+                        dialogData,
+                        List.of(
+                                new class_11519(
+                                        new DialogButtonData(
+                                                TextUtils.ParseQuickText("<green>" +
+                                                        "开始挑战" +
+                                                        "</green>"),
+                                                Optional.of(TextUtils.ParseQuickText("<green>开始挑战</green>")),
+                                                128
+                                        ),
+                                        Optional.of(
+                                                new class_11525(
+                                                        new ClickEvent.RunCommand("list")
+                                                )
+                                        )
+                                )
+                        ),
+                        Optional.of(new class_11519(
+                                new DialogButtonData(
+                                        TextUtils.ParseQuickText("<red>关闭</red>"),
+                                        Optional.of(Text.literal("???")),
+                                        128
+                                ),
+                                Optional.of(new class_11525(
+                                        new ClickEvent.RunCommand("list")
+                                ))
+                        )),
+                        2
+                );
+                player.openDialog(RegistryEntry.of(dialog));
+            } catch (Exception e) {
+                System.err.println("Failed to open dialog: " + e.getMessage());
+            }
             return 1;
         }).registerThis();
 

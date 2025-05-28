@@ -1,12 +1,22 @@
 package uk.shiz.challenge;
 
+import com.mojang.serialization.MapCodec;
+import net.minecraft.class_11520;
+import net.minecraft.class_11521;
+import net.minecraft.dialog.DialogCommonData;
+import net.minecraft.dialog.type.Dialog;
+import net.minecraft.dialog.type.DialogListDialog;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.DialogTags;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import uk.shiz.TextUtils;
 import uk.shiz.command.ChallengeCommand;
 
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.BiFunction;
@@ -48,7 +58,6 @@ public class ChallengeManager {
                 }
                 return 0;
             });
-//            Collections.shuffle(q.options);
             String randChallengeID = "N2_Challenge_" + System.currentTimeMillis();
             challenge.setChallenge(
                     randChallengeID,
@@ -57,9 +66,9 @@ public class ChallengeManager {
                     q.options
             );
             try {
-                net.minecraft.dialog.type.Dialog dialog = Dialog.getChallengeDialog("N2 真题", challenge);
+                net.minecraft.dialog.type.Dialog dialog = uk.shiz.challenge.Dialog.getChallengeDialog("N2 真题", challenge);
                 player.openDialog(RegistryEntry.of(dialog));
-            } catch (URISyntaxException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
