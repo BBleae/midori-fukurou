@@ -58,7 +58,7 @@ public class ChallengeManager {
                 }
                 return 0;
             });
-            String randChallengeID = "N2_Challenge_" + System.currentTimeMillis();
+            String randChallengeID = "Challenge_" + System.currentTimeMillis();
             challenge.setChallenge(
                     randChallengeID,
                     q.questionText,

@@ -23,9 +23,9 @@ public class Dialog {
         var commonData = new DialogCommonData(
                 TextUtils.ParseQuickText(title),
                 Optional.empty(),
-                true,
-                true,
-                class_11520.CLOSE,
+                true, // can_close_with_escape
+                true, // pause
+                class_11520.CLOSE, // after_action
                 List.of(
                         new PlainMessageDialogBody(
                                 ch.challengeText,
