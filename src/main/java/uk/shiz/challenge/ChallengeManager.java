@@ -1,25 +1,12 @@
 package uk.shiz.challenge;
 
-import com.mojang.serialization.MapCodec;
-import net.minecraft.class_11520;
-import net.minecraft.class_11521;
-import net.minecraft.dialog.DialogCommonData;
-import net.minecraft.dialog.type.Dialog;
-import net.minecraft.dialog.type.DialogListDialog;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.DialogTags;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
-import uk.shiz.TextUtils;
 import uk.shiz.command.ChallengeCommand;
 
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class ChallengeManager {
@@ -47,7 +34,7 @@ public class ChallengeManager {
     ) {
         Thread producer = new Thread(() -> {
             var challenge = ChallengeCommand.createResponseListener(player, (ch, playerAnswer) -> {
-                Boolean answerCorrect = ch.correctResponse.equals(playerAnswer);
+                boolean answerCorrect = ch.correctResponse.equals(playerAnswer);
                 try {
                     if (answerCorrect) {
                         ch.solve();

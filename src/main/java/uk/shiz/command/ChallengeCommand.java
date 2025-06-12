@@ -1,15 +1,13 @@
 package uk.shiz.command;
 
-import com.mojang.serialization.MapCodec;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
 import kong.unirest.core.Unirest;
-import net.minecraft.*;
+import net.minecraft.dialog.AfterAction;
+import net.minecraft.dialog.DialogActionButtonData;
 import net.minecraft.dialog.DialogButtonData;
 import net.minecraft.dialog.DialogCommonData;
-import net.minecraft.dialog.Dialogs;
-import net.minecraft.dialog.type.ColumnsDialog;
-import net.minecraft.dialog.type.Dialog;
+import net.minecraft.dialog.action.SimpleDialogAction;
 import net.minecraft.dialog.type.MultiActionDialog;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,19 +16,18 @@ import net.minecraft.text.Text;
 import uk.shiz.MidoriFukurou;
 import uk.shiz.TextUtils;
 import uk.shiz.challenge.Challenge;
-import uk.shiz.challenge.ChallengeManager;
 import uk.shiz.challenge.Question;
 
-import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static uk.shiz.challenge.ChallengeManager.sendChallengeToPlayer;
-import static uk.shiz.challenge.Question.Option;
 
 public class ChallengeCommand {
-    private static ArrayList<Challenge> challenges = new ArrayList<>();
+    private static final ArrayList<Challenge> challenges = new ArrayList<>();
 
     public static Challenge createResponseListener(
             ServerPlayerEntity p,
@@ -43,7 +40,7 @@ public class ChallengeCommand {
 
     private static Question parseQuestionFromJson(JsonNode body) {
         var arr = body.getArray();
-        if (arr.length() == 0) {
+        if (arr.isEmpty()) {
             MidoriFukurou.LOGGER.error("No questions found in the response.");
             return null;
         }
@@ -68,7 +65,7 @@ public class ChallengeCommand {
         commandReg.newCommand("challenge", (context, text) -> {
             var args = Arrays.stream(text.getString().split(" ")).filter(s -> !s.isEmpty()).toArray(String[]::new);
             if (args.length < 2) {
-                MidoriFukurou.LOGGER.error(String.format("No challenge ID provided, args: %s", Arrays.toString(args)));
+                MidoriFukurou.LOGGER.error("No challenge ID provided, args: {}", Arrays.toString(args));
                 return 0;
             }
             var puuid = context.getSource().getPlayer().getUuid();
@@ -80,7 +77,7 @@ public class ChallengeCommand {
                     return 1;
                 }
             }
-            MidoriFukurou.LOGGER.error("No challenge found for player " + context.getSource().getPlayer().getName().getString() + " with ID " + challengeId);
+            MidoriFukurou.LOGGER.error("No challenge found for player {} with ID {}", context.getSource().getPlayer().getName().getString(), challengeId);
             return 1;
         }).registerThis();
 
@@ -92,12 +89,12 @@ public class ChallengeCommand {
                                 "<green>" +
                                         "<hover show_text 'ABCD'>1919</hover>" +
                                         "</green>"
-                        ), Optional.of(Text.literal("DEF")), true, true, class_11520.CLOSE, List.of(), List.of()
+                        ), Optional.of(Text.literal("DEF")), true, true, AfterAction.CLOSE, List.of(), List.of()
                 );
                 var dialog = new MultiActionDialog(
                         dialogData,
                         List.of(
-                                new class_11519(
+                                new DialogActionButtonData(
                                         new DialogButtonData(
                                                 TextUtils.ParseQuickText("<green>" +
                                                         "开始挑战" +
@@ -106,19 +103,19 @@ public class ChallengeCommand {
                                                 128
                                         ),
                                         Optional.of(
-                                                new class_11525(
+                                                new SimpleDialogAction(
                                                         new ClickEvent.RunCommand("list")
                                                 )
                                         )
                                 )
                         ),
-                        Optional.of(new class_11519(
+                        Optional.of(new DialogActionButtonData(
                                 new DialogButtonData(
                                         TextUtils.ParseQuickText("<red>关闭</red>"),
                                         Optional.of(Text.literal("???")),
                                         128
                                 ),
-                                Optional.of(new class_11525(
+                                Optional.of(new SimpleDialogAction(
                                         new ClickEvent.RunCommand("list")
                                 ))
                         )),
@@ -138,29 +135,23 @@ public class ChallengeCommand {
                         HttpResponse<JsonNode> response = Unirest.get("https://midori-api.satori.workers.dev/randomQuiz?maxCount=1&prefix=japanese/jlpt/" + level)
                                 .asJson();
                         if (response.getStatus() != 200) {
-                            MidoriFukurou.LOGGER.error("Failed to fetch challenge: " + response.getStatusText());
+                            MidoriFukurou.LOGGER.error("Failed to fetch challenge: {}", response.getStatusText());
                             return;
                         }
                         JsonNode body = response.getBody();
                         Question q = parseQuestionFromJson(body);
                         if (q == null) {
-                            player.sendMessage(TextUtils.ParseQuickText(
-                                    String.format("<red>无法获取题目，请稍后再试。</red>")
-                            ));
+                            player.sendMessage(TextUtils.ParseQuickText("<red>无法获取题目，请稍后再试。</red>"));
                             return;
                         }
                         sendChallengeToPlayer(q, player, (answer) -> {
-                            if (answer.isCorrect == false) {
-                                player.sendMessage(TextUtils.ParseQuickText(
-                                        String.format("===========================\n"
-                                                + "<yellow>挑战失败</yellow>"
-                                        )
+                            if (!answer.isCorrect()) {
+                                player.sendMessage(TextUtils.ParseQuickText("===========================\n"
+                                        + "<yellow>挑战失败</yellow>"
                                 ));
                             } else {
-                                player.sendMessage(TextUtils.ParseQuickText(
-                                        String.format("===========================\n" +
-                                                "<green>挑战成功！</green>"
-                                        )
+                                player.sendMessage(TextUtils.ParseQuickText("===========================\n" +
+                                        "<green>挑战成功！</green>"
                                 ));
                             }
                             var opts = q.options.stream()
@@ -178,7 +169,7 @@ public class ChallengeCommand {
                                     .reduce((a, b) -> a + "\n" + b)
                                     .orElse("");
 
-                            var playerAnswerLine = answer.isCorrect ? "你的答案: <green>%s</green>" : "你的答案: <red>%s</red>\n\n";
+                            var playerAnswerLine = answer.isCorrect() ? "你的答案: <green>%s</green>" : "你的答案: <red>%s</red>\n\n";
                             player.sendMessage(
                                     TextUtils.ParseQuickText(
                                             String.format("<aqua>%s</aqua>\n" +
@@ -187,7 +178,7 @@ public class ChallengeCommand {
                                                             "<purple>\n%s</purple>",
                                                     q.questionText,
                                                     opts,
-                                                    Integer.parseInt(answer.playerAnswer) + 1,
+                                                    Integer.parseInt(answer.playerAnswer()) + 1,
                                                     q.analysis.replaceAll("\r", "")
                                             )
                                     )

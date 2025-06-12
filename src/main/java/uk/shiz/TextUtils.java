@@ -6,7 +6,8 @@ import eu.pb4.placeholders.api.parsers.TagParser;
 import net.minecraft.text.Text;
 
 public class TextUtils {
-    private static NodeParser parser = NodeParser.merge(TagParser.DEFAULT, Placeholders.DEFAULT_PLACEHOLDER_PARSER);
+    private static final NodeParser parser = NodeParser.merge(TagParser.DEFAULT, Placeholders.DEFAULT_PLACEHOLDER_PARSER);
+
     public static Text ParseQuickText(String textFormat) {
         return parser.parseNode(textFormat).toText();
     }

@@ -1,6 +1,7 @@
 package uk.shiz.challenge;
 
-import net.minecraft.class_11520; //after_action
+import net.minecraft.dialog.AfterAction;
+import net.minecraft.dialog.DialogActionButtonData;
 import net.minecraft.dialog.DialogCommonData;
 import net.minecraft.dialog.body.PlainMessageDialogBody;
 import net.minecraft.dialog.type.MultiActionDialog;
@@ -25,7 +26,7 @@ public class Dialog {
                 Optional.empty(),
                 true, // can_close_with_escape
                 true, // pause
-                class_11520.CLOSE, // after_action
+                AfterAction.CLOSE, // after_action
                 List.of(
                         new PlainMessageDialogBody(
                                 ch.challengeText,
@@ -36,7 +37,8 @@ public class Dialog {
         );
 
         AtomicBoolean hasAnyOptionsLengthTooLong = new AtomicBoolean(false);
-        var btnList = ch.responses.stream().map(
+
+        List<DialogActionButtonData> btnList = ch.responses.stream().map(
                 chOpts -> {
                     if (chOpts.name.getString().length() >= 16) {
                         hasAnyOptionsLengthTooLong.set(true);
@@ -53,7 +55,7 @@ public class Dialog {
                     );
                 }
         ).toList();
-        net.minecraft.dialog.type.Dialog dialog = new MultiActionDialog(
+        return new MultiActionDialog(
                 commonData,
                 btnList,
                 Optional.of(
@@ -65,6 +67,5 @@ public class Dialog {
                 ),
                 hasAnyOptionsLengthTooLong.get() ? 1 : 2
         );
-        return dialog;
     }
 }

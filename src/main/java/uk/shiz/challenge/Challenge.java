@@ -6,12 +6,11 @@ import uk.shiz.TextUtils;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class Challenge {
     public String challengeId;
-    public BiFunction<Challenge, String, Integer> callbackFunction;
-    public UUID puuid;
+    public final BiFunction<Challenge, String, Integer> callbackFunction;
+    public final UUID puuid;
     public String correctResponse;
     public ArrayList<ChallengeOption> responses = new ArrayList<>();
     public Text challengeText;
@@ -33,16 +32,6 @@ public class Challenge {
         this.solved = true;
     }
 
-    public static class ChallengeOption {
-        public Text name;
-        public String value;
-
-        public ChallengeOption(String name, String value) {
-            this.name = TextUtils.ParseQuickText(name);
-            this.value = value;
-        }
-    }
-
     public void setChallenge(
             String challengeId,
             String challengeText,
@@ -52,5 +41,15 @@ public class Challenge {
         this.challengeText = TextUtils.ParseQuickText(challengeText);
         this.correctResponse = correctResponseValue;
         this.responses = responses;
+    }
+
+    public static class ChallengeOption {
+        public final Text name;
+        public final String value;
+
+        public ChallengeOption(String name, String value) {
+            this.name = TextUtils.ParseQuickText(name);
+            this.value = value;
+        }
     }
 }

@@ -5,12 +5,10 @@ import uk.shiz.challenge.Challenge.ChallengeOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.shiz.challenge.Question.Option;
-
 public class Question {
-    public String questionText;
-    public String correctAnswer;
-    public ArrayList<ChallengeOption> options;
+    public final String questionText;
+    public final String correctAnswer;
+    public final ArrayList<ChallengeOption> options;
     public String analysis;
 
     public Question(String questionText, String correctAnswer, List<ChallengeOption> options) {
@@ -19,11 +17,11 @@ public class Question {
         this.options = new ArrayList<>(options);
     }
 
-    public void setAnalysis(String analysis) {
-        this.analysis = analysis;
-    }
-
     public static ChallengeOption Option(String name, String value) {
         return new ChallengeOption(name, value);
+    }
+
+    public void setAnalysis(String analysis) {
+        this.analysis = analysis;
     }
 }

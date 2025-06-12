@@ -12,8 +12,8 @@ import net.minecraft.text.Text;
 import java.util.function.BiFunction;
 
 public class CommandRegister {
-    private CommandRegistryAccess commandRegistryAccess;
-    private CommandDispatcher<ServerCommandSource> dispatcher;
+    private final CommandRegistryAccess commandRegistryAccess;
+    private final CommandDispatcher<ServerCommandSource> dispatcher;
 
     public CommandRegister(
             CommandRegistryAccess commandRegistryAccess,
@@ -21,23 +21,6 @@ public class CommandRegister {
     ) {
         this.commandRegistryAccess = commandRegistryAccess;
         this.dispatcher = dispatcher;
-    }
-
-    public class CommandBuilder {
-        private final LiteralArgumentBuilder<ServerCommandSource> builder;
-
-        public CommandBuilder(LiteralArgumentBuilder<ServerCommandSource> builder) {
-            this.builder = builder;
-        }
-
-        public CommandBuilder registerThis() {
-            dispatcher.register(builder);
-            return this;
-        }
-
-        public LiteralArgumentBuilder<ServerCommandSource> getBuilder() {
-            return builder;
-        }
     }
 
     public CommandBuilder newCommand(
@@ -56,5 +39,22 @@ public class CommandRegister {
     ) {
         Text text = TextArgumentType.getTextArgument(context, "args");
         return action.apply(context, text);
+    }
+
+    public class CommandBuilder {
+        private final LiteralArgumentBuilder<ServerCommandSource> builder;
+
+        public CommandBuilder(LiteralArgumentBuilder<ServerCommandSource> builder) {
+            this.builder = builder;
+        }
+
+        public CommandBuilder registerThis() {
+            dispatcher.register(builder);
+            return this;
+        }
+
+        public LiteralArgumentBuilder<ServerCommandSource> getBuilder() {
+            return builder;
+        }
     }
 }
